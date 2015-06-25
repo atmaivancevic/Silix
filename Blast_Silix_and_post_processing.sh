@@ -57,9 +57,31 @@ done
 # Haven't figured out how to do this with 'awk' yet
 # For now, open the files in TextWrangler and delete the singletons (at the bottom, after the clusters)
 
-# Similarly (also need to figure out), remove species-specific (monophyletic) clusters, to leave only clusters containing >1 species
+# Replace all '_' with spaces
+for j in 60 65 70 75 80 85 90 95 98
+do
+sed "s/_/ /g" seqBovB_separated_$j.fnodes > seqBovB_columns_$j.fnodes
+done
 
-# Remove clusters than seem to be composed of (really) short fragments only (e.g. 200bp)
+# Similarly, remove species-specific (monophyletic) clusters, to leave only clusters containing >1 species
+for j in 60 65 70 75 80 85 90 95 98
+do
+awk '
+    NF && !a[$1 " " $2]++ { b[$1]++ }
+    END { for (i in b) if (b[i] == 1) print "/^" i "[^0-9]/,/^$/d" }' seqL1_columns_$j.fnodes | \
+sed -f /dev/stdin seqL1_columns_$j.fnodes > seqL1_divergent_$j.fnodes
+done
+# NF selects non-empty lines
+# !a[$1 " " $2]++ selects unique pairs (cluster, species)
+# b[$1] counts the number of unique animals in cluster $1
+# the END clause prints a line /^2[^0-9]/,/^$/d for each cluster that has exactly one animal; this is a sed(1) command to delete the corresponding cluster
+# sed -f /dev/stdin reads the commands from awk(1) and applies them
+
+# Print out all the combinations of animals found (per cluster)
+
+
+
+
 
 # Want to separate 2nd column (seq) into multiple columns by replacing all '_' with tabs
 # Most seqs are of the form Animal_seq_startCoord_endCoord (+ maybe.rev at the end)
