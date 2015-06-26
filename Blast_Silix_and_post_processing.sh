@@ -63,23 +63,16 @@ do
 sed "s/_/ /g" seqBovB_separated_$j.fnodes > seqBovB_columns_$j.fnodes
 done
 
-# Similarly, remove species-specific (monophyletic) clusters, to leave only clusters containing >1 species
+# Print out all the different combinations of animals found (ignoring species-specific clusters)
 for j in 60 65 70 75 80 85 90 95 98
 do
-awk '
-    NF && !a[$1 " " $2]++ { b[$1]++ }
-    END { for (i in b) if (b[i] == 1) print "/^" i "[^0-9]/,/^$/d" }' seqL1_columns_$j.fnodes | \
-sed -f /dev/stdin seqL1_columns_$j.fnodes > seqL1_divergent_$j.fnodes
+awk -f tst.awk seqL1_columns_$j.fnodes > seqL1_species_comb_$j.fnodes
 done
-# NF selects non-empty lines
-# !a[$1 " " $2]++ selects unique pairs (cluster, species)
-# b[$1] counts the number of unique animals in cluster $1
-# the END clause prints a line /^2[^0-9]/,/^$/d for each cluster that has exactly one animal; this is a sed(1) command to delete the corresponding cluster
-# sed -f /dev/stdin reads the commands from awk(1) and applies them
-
-# Print out all the combinations of animals found (per cluster)
-
-
+# output format is of the form: ClusterNo, Animals
+# Note: the ClusterNo shown is the FIRST cluster at which this unique animal combination appears. 
+# There may be later clusters which also show the same animal combination
+# So if the animal combination is interesting, look for similar clusters after this ClusterNo
+# Look out for clusters which contain species from different orders
 
 
 
